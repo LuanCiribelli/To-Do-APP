@@ -4,23 +4,20 @@ import { Keyboard, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableO
 import Task from './components/Task.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
-import { storeData, getData } from './components/storage.js';  // Adjust the path as necessary
-
+import { storeData, getData } from './components/storage.js';
 
 export default function App() {
-
   const [task, setTask] = useState('');
   const [taskItems, setTaskItems] = useState([]);
-
-
 
   const handleAddTask = () => {
     Keyboard.dismiss();
 
     const newTask = {
-      id: Date.now(),  // Usando timestamp como ID para simplicidade
+      id: Date.now(),
       text: task,
-      isEditing: false
+      isEditing: false,
+      checked: false, // Adicionado para controlar o estado de 'checked'
     };
 
     setTaskItems([...taskItems, newTask]);
@@ -34,8 +31,6 @@ export default function App() {
     setTaskItems(itemsCopy);
     storeData(itemsCopy);
   }
-
-  
 
   const toggleEdit = (taskId) => {
     setTaskItems(prevTasks =>
@@ -53,19 +48,25 @@ export default function App() {
     );
   }
 
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
-        try {
-            const data = await getData();
-            if (data) setTaskItems(data);
-        } catch (error) {
-            console.error("Failed to fetch data:", error);
-        }
+      try {
+        const data = await getData();
+        if (data) setTaskItems(data);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
     };
     fetchData();
-}, []);
+  }, []);
 
-
+  const toggleCheckbox = (taskId) => {
+    setTaskItems(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, checked: !task.checked } : task
+      )
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -75,11 +76,8 @@ useEffect(() => {
         }}
         keyboardShouldPersistTaps='handled'
       >
-
         <View style={styles.taskWrapper}>
-
           <Text style={styles.sectionTitle} >Tarefas De hoje</Text>
-
           <View style={styles.items}>
             {
               taskItems.map((item, index) => {
@@ -89,15 +87,13 @@ useEffect(() => {
                       task={item}
                       toggleEdit={toggleEdit}
                       completeEditingTask={completeEditingTask}
+                      toggleCheckbox={toggleCheckbox}
                     />
                   </TouchableOpacity>
                 )
-
               })
             }
-
           </View>
-
         </View>
       </ScrollView>
       <KeyboardAvoidingView
@@ -111,7 +107,6 @@ useEffect(() => {
           </View>
         </TouchableOpacity>
       </KeyboardAvoidingView>
-
     </View>
   );
 }
@@ -119,55 +114,58 @@ useEffect(() => {
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E8EAED',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
+
   taskWrapper: {
-    paddingTop: 0.1 * windowHeight,  // 10% da altura da tela
-    paddingHorizontal: 0.05 * windowWidth,  // 5% da largura da tela
+    flex: 1,
+    paddingTop: 0.1 * windowHeight,
+    paddingHorizontal: 0.05 * windowWidth,
+    justifyContent: 'flex-start',
   },
   sectionTitle: {
-    fontSize: 0.05 * windowWidth,  // Ajuste conforme necessário
+    fontSize: 0.05 * windowWidth,
     fontWeight: 'bold',
-    textAlign: 'center', // Centraliza o texto horizontalmente
+    textAlign: 'center',
   },
   items: {
-    marginTop: 0.03 * windowHeight,  // 3% da altura da tela
-    paddingHorizontal: 0.05 * windowWidth,  // Adiciona padding horizontal
+    marginTop: 0.03 * windowHeight,
+    paddingHorizontal: 0.05 * windowWidth,
   },
   writeTaskWrapper: {
-    position: 'absolute',
-    bottom: 0.08 * windowHeight,  // 8% da altura da tela
-    width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-evenly', // Distribui os elementos igualmente na linha
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 0.05 * windowWidth,  // Adiciona padding horizontal
+    paddingHorizontal: 0.05 * windowWidth,
+    position: 'absolute',
+    bottom: 0.08 * windowHeight,
+    width: '100%',
   },
   input: {
-    paddingVertical: 0.02 * windowHeight,  // 2% da altura da tela
-    width: '65%', // Reduziu um pouco a largura para ajustar o padding
+    paddingVertical: 0.02 * windowHeight,
+    width: '65%',
     backgroundColor: '#FFF',
-    borderRadius: 30,  // Ajuste conforme necessário
+    borderRadius: 30,
     borderColor: '#C0C0C0',
     borderWidth: 1,
     textAlign: 'center',
   },
   addWrapper: {
-    width: 0.15 * windowWidth,  // 15% da largura da tela
-    height: 0.15 * windowWidth,  // Manter um círculo perfeito
+    width: 0.15 * windowWidth,
+    height: 0.15 * windowWidth,
     backgroundColor: '#FFF',
-    borderRadius: 0.075 * windowWidth,  // 7.5% da largura da tela
+    borderRadius: 0.075 * windowWidth,
     justifyContent: 'center',
     alignItems: 'center',
     borderColor: '#C0C0C0',
     borderWidth: 1,
   },
   addText: {
-    fontSize: 0.05 * windowWidth,  // Ajuste conforme necessário
+    fontSize: 0.05 * windowWidth,
   },
 });
-

@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 
 
-const Task = ({ task, toggleEdit, completeEditingTask }) => {
+const Task = ({ task, toggleEdit, completeEditingTask, toggleCheckbox }) => {
+  const handleCheckboxToggle = () => {
+    toggleCheckbox(task.id);
+  };
 
   const [localText, setLocalText] = useState(task.text);
 
@@ -27,16 +30,21 @@ const Task = ({ task, toggleEdit, completeEditingTask }) => {
   else {
     return (
       <View style={styles.item}>
-        <View style={styles.itemLeft}>
-          <View style={styles.square}></View>
-          <Text style={styles.itemText}>{task.text}</Text>
+        <Text style={styles.itemText}>{task.text}</Text>
+        <View style={styles.actions}>
           <TouchableOpacity onPress={() => toggleEdit(task.id)}>
-            <Text style={styles.editText}>🖊️</Text>  
+            <Text style={styles.editText}>🖊️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCheckboxToggle}>
+            <View style={styles.checkboxBase}>
+              {task.checked && <View style={styles.checkboxChecked}></View>}
+            </View>
           </TouchableOpacity>
         </View>
-        <View style={styles.circular}></View>
       </View>
     )
+    
+    
   }
 }
 
@@ -47,7 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between',  // Isso irá separar o texto e a View das ações
     marginBottom: 20,
   },
   itemLeft: {
@@ -83,7 +91,26 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 10
   },
-
+  checkboxBase: {
+    width: 24,
+    height: 24,
+    borderRadius: 5,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#55BCF6',
+    marginRight: 15,
+  },
+  checkboxChecked: {
+    width: 14,
+    height: 14,
+    backgroundColor: '#55BCF6',
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  }
+  
 });
 
 
