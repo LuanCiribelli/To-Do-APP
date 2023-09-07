@@ -9,28 +9,34 @@ import { storeData, getData } from './components/storage.js';
 export default function App() {
   const [task, setTask] = useState('');
   const [taskItems, setTaskItems] = useState([]);
+  
 
   const handleAddTask = () => {
+    if (task.trim().length === 0) {
+      return;
+    }
+
     Keyboard.dismiss();
 
     const newTask = {
       id: Date.now(),
       text: task,
       isEditing: false,
-      checked: false, // Adicionado para controlar o estado de 'checked'
+      checked: false
     };
+
 
     setTaskItems([...taskItems, newTask]);
     storeData([...taskItems, newTask]);
     setTask('');
   };
 
-  const completeTask = (index) => {
-    let itemsCopy = [...taskItems];
-    itemsCopy.splice(index, 1);
-    setTaskItems(itemsCopy);
+
+  const completeTaskById = (taskId) => {
+    setTaskItems(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    itemsCopy= taskItems;
     storeData(itemsCopy);
-  }
+  };
 
   const toggleEdit = (taskId) => {
     setTaskItems(prevTasks =>
@@ -42,11 +48,28 @@ export default function App() {
 
   const completeEditingTask = (taskId, newText) => {
     setTaskItems(prevTasks =>
-      [...prevTasks.map(task =>
-        task.id === taskId ? { ...task, text: newText, isEditing: false } : task
-      )]
+      prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            text: newText,
+            isEditing: false
+          };
+        }
+        return { ...task };  
+      })
     );
-  }
+  };
+  
+  
+
+  const toggleCheckbox = (taskId) => {
+    setTaskItems(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, checked: !task.checked } : task
+      )
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,13 +83,6 @@ export default function App() {
     fetchData();
   }, []);
 
-  const toggleCheckbox = (taskId) => {
-    setTaskItems(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId ? { ...task, checked: !task.checked } : task
-      )
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -77,19 +93,19 @@ export default function App() {
         keyboardShouldPersistTaps='handled'
       >
         <View style={styles.taskWrapper}>
-          <Text style={styles.sectionTitle} >Tarefas De hoje</Text>
+          <Text style={styles.sectionTitle}>Tarefas De hoje</Text>
           <View style={styles.items}>
             {
               taskItems.map((item, index) => {
                 return (
-                  <TouchableOpacity key={index} onPress={() => completeTask(index)}>
-                    <Task
-                      task={item}
-                      toggleEdit={toggleEdit}
-                      completeEditingTask={completeEditingTask}
-                      toggleCheckbox={toggleCheckbox}
-                    />
-                  </TouchableOpacity>
+                  <Task
+                    key={index}
+                    task={item}
+                    toggleEdit={toggleEdit}
+                    completeEditingTask={completeEditingTask}
+                    toggleCheckbox={toggleCheckbox}
+                    completeTaskById={completeTaskById}
+                  />
                 )
               })
             }
@@ -109,6 +125,7 @@ export default function App() {
       </KeyboardAvoidingView>
     </View>
   );
+  
 }
 
 const windowHeight = Dimensions.get('window').height;

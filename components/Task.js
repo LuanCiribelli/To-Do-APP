@@ -3,10 +3,15 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 
 
-const Task = ({ task, toggleEdit, completeEditingTask, toggleCheckbox }) => {
+const Task = ({ task, toggleEdit, completeEditingTask, toggleCheckbox, completeTaskById }) => {
+ 
   const handleCheckboxToggle = () => {
     toggleCheckbox(task.id);
+    setTimeout(() => {
+      completeTaskById(task.id);
+    }, 500);
   };
+  
 
   const [localText, setLocalText] = useState(task.text);
 
