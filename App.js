@@ -4,6 +4,7 @@ import { Keyboard, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableO
 import Task from './components/Task.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
+import { storeData, getData } from './components/storage.js';  // Adjust the path as necessary
 
 
 export default function App() {
@@ -34,32 +35,7 @@ export default function App() {
     storeData(itemsCopy);
   }
 
-  const storeData = async (value) => {
-    try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem('@tasks', jsonValue)
-    } catch (e) {
-      console.error("Erro ao salvar no AsyncStorage: ", e);
-    }
-  }
-
-  const getData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('@tasks')
-      if (jsonValue !== null) {
-        setTaskItems(JSON.parse(jsonValue))
-      }
-    } catch (e) {
-      console.error("Erro ao carregar do AsyncStorage: ", e);
-    }
-  }
-  const startEditingTask = (taskId) => {
-    setTaskItems(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId ? { ...task, isEditing: true } : task
-      )
-    );
-  }
+  
 
   const toggleEdit = (taskId) => {
     setTaskItems(prevTasks =>
@@ -77,9 +53,18 @@ export default function App() {
     );
   }
 
-  useEffect(() => {
-    getData();
-  }, []);
+useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const data = await getData();
+            if (data) setTaskItems(data);
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+        }
+    };
+    fetchData();
+}, []);
+
 
 
   return (
