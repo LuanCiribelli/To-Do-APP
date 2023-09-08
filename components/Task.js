@@ -1,57 +1,54 @@
-
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 
+const Task = ({
+  task,
+  toggleEdit,
+  completeEditingTask,
+  toggleCheckbox,
+  completeTaskById
+}) => {
+  const [localText, setLocalText] = useState(task.text);
 
-const Task = ({ task, toggleEdit, completeEditingTask, toggleCheckbox, completeTaskById }) => {
- 
+  const handleSave = () => {
+    completeEditingTask(task.id, localText);
+    toggleEdit(task.id);
+  };
+
   const handleCheckboxToggle = () => {
     toggleCheckbox(task.id);
     setTimeout(() => {
       completeTaskById(task.id);
     }, 500);
   };
-  
 
-  const [localText, setLocalText] = useState(task.text);
-
-  if (task.isEditing) {
-    return (
-      <View style={styles.item}>
-        <TextInput
-          value={localText}
-          onChangeText={setLocalText}
-          style={styles.editInput}
-        />
-        <TouchableOpacity onPress={() => {
-          completeEditingTask(task.id, localText);
-          toggleEdit(task.id);
-        }}>
-          <Text>[salvar]</Text>
+  return task.isEditing ? (
+    <View style={styles.item}>
+      <TextInput
+        value={localText}
+        onChangeText={setLocalText}
+        style={styles.editInput}
+      />
+      <TouchableOpacity onPress={handleSave}>
+        <Text>[salvar]</Text>
+      </TouchableOpacity>
+    </View>
+  ) : (
+    <View style={styles.item}>
+      <Text style={styles.itemText}>{task.text}</Text>
+      <View style={styles.actions}>
+        <TouchableOpacity onPress={() => toggleEdit(task.id)}>
+          <Text style={styles.editText}>🖊️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleCheckboxToggle}>
+          <View style={styles.checkboxBase}>
+            {task.checked && <View style={styles.checkboxChecked}></View>}
+          </View>
         </TouchableOpacity>
       </View>
-    )
-  }
-  else {
-    return (
-      <View style={styles.item}>
-        <Text style={styles.itemText}>{task.text}</Text>
-        <View style={styles.actions}>
-          <TouchableOpacity onPress={() => toggleEdit(task.id)}>
-            <Text style={styles.editText}>🖊️</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCheckboxToggle}>
-            <View style={styles.checkboxBase}>
-              {task.checked && <View style={styles.checkboxChecked}></View>}
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-    
-    
-  }
-}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   item: {
@@ -115,7 +112,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   }
-  
+
 });
 
 

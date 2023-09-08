@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { Keyboard, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Platform } from 'react-native';
-import Task from './components/Task.js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Dimensions } from 'react-native';
-import { storeData, getData } from './components/storage.js';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Platform,
+  Dimensions
+} from 'react-native';
+import Task from './components/Task';
+import { storeData, getData } from './components/storage';
 
 export default function App() {
   const [task, setTask] = useState('');
   const [taskItems, setTaskItems] = useState([]);
-  
 
+  // Event Handlers
   const handleAddTask = () => {
-    if (task.trim().length === 0) {
-      return;
-    }
-
-    Keyboard.dismiss();
+    if (!task.trim()) return;
 
     const newTask = {
       id: Date.now(),
@@ -24,53 +28,37 @@ export default function App() {
       isEditing: false,
       checked: false
     };
+    const updatedTasks = [...taskItems, newTask];
 
-
-    setTaskItems([...taskItems, newTask]);
-    storeData([...taskItems, newTask]);
+    Keyboard.dismiss();
+    setTaskItems(updatedTasks);
+    storeData(updatedTasks);
     setTask('');
   };
 
+  const updateTaskItems = (callback) => {
+    const updatedTasks = callback(taskItems);
+    setTaskItems(updatedTasks);
+    storeData(updatedTasks);
+  };
 
   const completeTaskById = (taskId) => {
-    setTaskItems(prevTasks => prevTasks.filter(task => task.id !== taskId));
-    itemsCopy= taskItems;
-    storeData(itemsCopy);
+    updateTaskItems(prevTasks => prevTasks.filter(task => task.id !== taskId));
   };
 
-  const toggleEdit = (taskId) => {
-    setTaskItems(prevTasks =>
-      [...prevTasks.map(task =>
-        task.id === taskId ? { ...task, isEditing: !task.isEditing } : task
-      )]
+  const togglePropertyById = (taskId, property) => {
+    updateTaskItems(prevTasks =>
+      prevTasks.map(task => task.id === taskId ? { ...task, [property]: !task[property] } : task)
     );
-  }
+  };
 
   const completeEditingTask = (taskId, newText) => {
-    setTaskItems(prevTasks =>
-      prevTasks.map(task => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            text: newText,
-            isEditing: false
-          };
-        }
-        return { ...task };  
-      })
-    );
-  };
-  
-  
-
-  const toggleCheckbox = (taskId) => {
-    setTaskItems(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId ? { ...task, checked: !task.checked } : task
-      )
+    updateTaskItems(prevTasks =>
+      prevTasks.map(task => task.id === taskId ? { ...task, text: newText, isEditing: false } : task)
     );
   };
 
+  // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -83,41 +71,29 @@ export default function App() {
     fetchData();
   }, []);
 
-
+  // JSX
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1
-        }}
-        keyboardShouldPersistTaps='handled'
-      >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps='handled'>
         <View style={styles.taskWrapper}>
           <Text style={styles.sectionTitle}>Tarefas De hoje</Text>
           <View style={styles.items}>
-            {
-              taskItems.map((item, index) => {
-                return (
-                  <Task
-                    key={index}
-                    task={item}
-                    toggleEdit={toggleEdit}
-                    completeEditingTask={completeEditingTask}
-                    toggleCheckbox={toggleCheckbox}
-                    completeTaskById={completeTaskById}
-                  />
-                )
-              })
-            }
+            {taskItems.map((item, index) => (
+              <Task
+                key={index}
+                task={item}
+                toggleEdit={() => togglePropertyById(item.id, 'isEditing')}
+                completeEditingTask={completeEditingTask}
+                toggleCheckbox={() => togglePropertyById(item.id, 'checked')}
+                completeTaskById={completeTaskById}
+              />
+            ))}
           </View>
         </View>
       </ScrollView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.writeTaskWrapper}
-      >
-        <TextInput style={styles.input} placeholder={'Escreva uma tarefa'} value={task} onChangeText={text => setTask(text)} />
-        <TouchableOpacity onPress={() => handleAddTask()}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.writeTaskWrapper}>
+        <TextInput style={styles.input} placeholder={'Escreva uma tarefa'} value={task} onChangeText={setTask} />
+        <TouchableOpacity onPress={handleAddTask}>
           <View style={styles.addWrapper}>
             <Text style={styles.addText}>+</Text>
           </View>
@@ -125,11 +101,10 @@ export default function App() {
       </KeyboardAvoidingView>
     </View>
   );
-  
 }
 
-const windowHeight = Dimensions.get('window').height;
-const windowWidth = Dimensions.get('window').width;
+// Styles
+const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -186,3 +161,9 @@ const styles = StyleSheet.create({
     fontSize: 0.05 * windowWidth,
   },
 });
+
+
+
+
+
+
