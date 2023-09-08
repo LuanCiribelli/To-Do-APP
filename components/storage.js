@@ -1,31 +1,48 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TASKS_KEY = '@tasks';
+// Chave para tarefas pendentes
+const PENDING_TASKS_KEY = '@pending_tasks';
+// Chave para tarefas concluídas
+const COMPLETED_TASKS_KEY = '@completed_tasks';
 
-/**
- * Armazena os dados fornecidos no AsyncStorage.
- * @param {Array} value - As tarefas a serem armazenadas.
- */
-export const storeData = async (value) => {
+// Salva as tarefas pendentes
+export const storePendingTasks = async (value) => {
   try {
     const jsonValue = JSON.stringify(value);
-    await AsyncStorage.setItem(TASKS_KEY, jsonValue);
+    await AsyncStorage.setItem(PENDING_TASKS_KEY, jsonValue);
   } catch (e) {
-    console.error("Erro ao salvar no AsyncStorage: ", e);
+    console.error("Erro ao salvar tarefas pendentes: ", e);
+  }
+};
+
+// Armazena as tarefas concluídas
+export const storeCompletedTasks = async (value) => {
+  try {
+    const jsonValue = JSON.stringify(value);
+    await AsyncStorage.setItem(COMPLETED_TASKS_KEY, jsonValue);
+  } catch (e) {
+    console.error("Erro ao salvar tarefas concluídas: ", e);
+  }
+};
+
+// Recupera tarefas pendentes
+export const getPendingTasks = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(PENDING_TASKS_KEY);
+    return jsonValue !== null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.error("Erro ao buscar tarefas pendentes do AsyncStorage: ", e);
     throw e;
   }
 };
 
-/**
- * Recupera tarefas do AsyncStorage.
- * @return {Array} As tarefas recuperadas ou uma lista vazia se nenhuma tarefa estiver armazenada.
- */
-export const getData = async () => {
+// Recupera tarefas concluídas
+export const getCompletedTasks = async () => {
   try {
-    const jsonValue = await AsyncStorage.getItem(TASKS_KEY);
+    const jsonValue = await AsyncStorage.getItem(COMPLETED_TASKS_KEY);
     return jsonValue !== null ? JSON.parse(jsonValue) : [];
   } catch (e) {
-    console.error("Erro ao buscar dados do AsyncStorage: ", e);
+    console.error("Erro ao buscar tarefas concluídas do AsyncStorage: ", e);
     throw e;
   }
 };

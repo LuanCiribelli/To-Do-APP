@@ -6,7 +6,7 @@ const Task = ({
   toggleEdit,
   completeEditingTask,
   toggleCheckbox,
-  completeTaskById
+  completeTaskItems
 }) => {
   const [localText, setLocalText] = useState(task.text);
 
@@ -18,12 +18,9 @@ const Task = ({
     toggleEdit(task.id);
   };
 
-  // Função para marcar a tarefa como concluída
+  // Função para marcar/desmarcar a tarefa como concluída
   const handleCheckboxToggle = () => {
     toggleCheckbox(task.id);
-    setTimeout(() => {
-      completeTaskById(task.id);
-    }, 500);
   };
 
   return task.isEditing ? (
@@ -46,8 +43,10 @@ const Task = ({
         </TouchableOpacity>
         <TouchableOpacity onPress={handleCheckboxToggle}>
           <View style={styles.checkboxBase}>
-            {task.checked && <View style={styles.checkboxChecked}></View>}
+            {(task.checked || completeTaskItems.some(completedTask => completedTask.id === task.id)) && <View style={styles.checkboxChecked}></View>}
           </View>
+
+
         </TouchableOpacity>
       </View>
     </View>

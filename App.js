@@ -12,11 +12,13 @@ import {
   Dimensions
 } from 'react-native';
 import Task from './components/Task';
-import { storeData, getData } from './components/storage';
+import { storePendingTasks, getPendingTasks, storeCompletedTasks, getCompletedTasks } from './components/storage';
 
 export default function App() {
   const [task, setTask] = useState('');
+  const [showCompleted, setShowCompleted] = useState(false);
   const [taskItems, setTaskItems] = useState([]);
+  const [completeTaskItems, setCompleteTaskItems] = useState([]);
 
   // Função para adicionar uma nova tarefa
   const handleAddTask = () => {
@@ -28,38 +30,61 @@ export default function App() {
       isEditing: false,
       checked: false
     };
-    const updatedTasks = [...taskItems, newTask];
-
-    Keyboard.dismiss();
+    
+    setTaskItems(prev => [...prev, newTask]);
     setTask('');
-    setTaskItems(updatedTasks);
+    Keyboard.dismiss();
   };
 
-  // Função para marcar ou desmarcar uma tarefa como em edição
   const handleToggleEdit = (taskId) => {
-    setTaskItems((prevTasks) =>
-      prevTasks.map((task) =>
+    setTaskItems(prevTasks => 
+      prevTasks.map(task => 
         task.id === taskId ? { ...task, isEditing: !task.isEditing } : task
       )
     );
   };
 
-  // Função para marcar ou desmarcar uma tarefa como concluída
   const handleToggleCheckbox = (taskId) => {
-    setTaskItems((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, checked: !task.checked } : task
-      )
-    );
+    setTaskItems((prevTasks) => {
+      const taskToToggle = prevTasks.find(t => t.id === taskId);
+      
+      // Se a tarefa estiver sendo marcada como concluída
+      if (taskToToggle && !taskToToggle.checked) {
+        setCompleteTaskItems((prevComplete) => [...prevComplete, { ...taskToToggle, checked: true }]);
+        return prevTasks.filter(task => task.id !== taskId);
+      }
+  
+      return prevTasks.map(task => task.id === taskId ? { ...task, checked: !task.checked } : task);
+    });
+  
+    setCompleteTaskItems((prevComplete) => {
+      const taskToToggle = prevComplete.find(t => t.id === taskId);
+      
+      if (taskToToggle) {
+        setTaskItems((prevTasks) => [...prevTasks, { ...taskToToggle, checked: false }]);
+        return prevComplete.filter(task => task.id !== taskId);
+      }
+  
+      return prevComplete;
+    });
+  };
+  
+
+
+  const toggleFilter = () => {
+    setShowCompleted(prevState => !prevState);
   };
 
   // Função para concluir e remover uma tarefa
   const completeTaskById = (taskId) => {
-    setTaskItems((prevTasks) =>
-      prevTasks.filter((task) => task.id !== taskId)
-    );
+    const taskToComplete = taskItems.find(t => t.id === taskId);
+    if (taskToComplete) {
+      setCompleteTaskItems([...completeTaskItems, taskToComplete]);
+      setTaskItems((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    } else {
+      console.warn('Task not found with ID:', taskId);
+    }
   };
-
   // Função para concluir a edição de uma tarefa
   const completeEditingTask = (taskId, newText) => {
     setTaskItems((prevTasks) =>
@@ -70,22 +95,25 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Salva as tarefas no armazenamento ao serem atualizadas
-    storeData(taskItems);
-  }, [taskItems]);
+    storePendingTasks(taskItems);
+    storeCompletedTasks(completeTaskItems);
+}, [taskItems, completeTaskItems]);
 
-  useEffect(() => {
-    // Recupera tarefas do armazenamento ao carregar o aplicativo
-    const fetchData = async () => {
-      try {
-        const data = await getData();
-        if (data) setTaskItems(data);
-      } catch (error) {
-        console.error("Erro ao buscar dados do AsyncStorage: ", error);
-      }
-    };
-    fetchData();
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const pendingData = await getPendingTasks();
+      const completedData = await getCompletedTasks();
+      if (pendingData) setTaskItems(pendingData);
+      if (completedData) setCompleteTaskItems(completedData);
+    } catch (error) {
+      console.error("Erro ao buscar dados do AsyncStorage: ", error);
+    }
+  };
+  fetchData();
+}, []);
+
+  const tasksToRender = showCompleted ? completeTaskItems : taskItems.filter(task => !task.checked);
 
   // Renderização da interface de usuário
   return (
@@ -96,8 +124,17 @@ export default function App() {
       >
         <View style={styles.taskWrapper}>
           <Text style={styles.sectionTitle}>Tarefas de Hoje</Text>
+          <TouchableOpacity
+            style={[styles.filtro, { backgroundColor: showCompleted ? 'green' : 'white' }]}
+            onPress={toggleFilter}
+          >
+            <Text style={{ color: showCompleted ? 'white' : 'green' }}>
+              {showCompleted ? 'Concluídas' : 'Pendentes'}
+            </Text>
+          </TouchableOpacity>
+
           <View style={styles.items}>
-            {taskItems.map((item) => (
+            {tasksToRender.map((item) => (
               <Task
                 key={item.id}
                 task={item}
@@ -105,6 +142,7 @@ export default function App() {
                 completeTaskById={completeTaskById}
                 toggleEdit={() => handleToggleEdit(item.id)}
                 toggleCheckbox={() => handleToggleCheckbox(item.id)}
+                completeTaskItems={completeTaskItems}
               />
             ))}
           </View>
@@ -186,4 +224,11 @@ const styles = StyleSheet.create({
   addText: {
     fontSize: 0.05 * windowWidth,
   },
+  filtro: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 15,
+    marginLeft: 10,
+  }
+
 });
