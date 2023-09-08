@@ -10,11 +10,15 @@ const Task = ({
 }) => {
   const [localText, setLocalText] = useState(task.text);
 
+  // Função para salvar a edição da tarefa
   const handleSave = () => {
-    completeEditingTask(task.id, localText);
+    if (localText !== task.text) {
+      completeEditingTask(task.id, localText);
+    }
     toggleEdit(task.id);
   };
 
+  // Função para marcar a tarefa como concluída
   const handleCheckboxToggle = () => {
     toggleCheckbox(task.id);
     setTimeout(() => {
@@ -30,7 +34,7 @@ const Task = ({
         style={styles.editInput}
       />
       <TouchableOpacity onPress={handleSave}>
-        <Text>[salvar]</Text>
+        <Text>[Salvar]</Text>
       </TouchableOpacity>
     </View>
   ) : (
@@ -57,31 +61,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',  // Isso irá separar o texto e a View das ações
+    justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  itemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap'
-  },
-  square: {
-    width: 24,
-    height: 24,
-    backgroundColor: '#55BCF6',
-    opacity: 0.4,
-    borderRadius: 5,
-    marginRight: 15,
   },
   itemText: {
     maxWidth: '80%',
-  },
-  circular: {
-    width: 12,
-    height: 12,
-    borderColor: '#55BCF6',
-    borderWidth: 2,
-    borderRadius: 5,
   },
   editText: {
     marginLeft: 10,
@@ -112,9 +96,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   }
-
 });
-
-
 
 export default Task;

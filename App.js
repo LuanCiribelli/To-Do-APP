@@ -18,7 +18,7 @@ export default function App() {
   const [task, setTask] = useState('');
   const [taskItems, setTaskItems] = useState([]);
 
-  // Event Handlers
+  // Função para adicionar uma nova tarefa
   const handleAddTask = () => {
     if (!task.trim()) return;
 
@@ -31,68 +31,95 @@ export default function App() {
     const updatedTasks = [...taskItems, newTask];
 
     Keyboard.dismiss();
-    setTaskItems(updatedTasks);
-    storeData(updatedTasks);
     setTask('');
-  };
-
-  const updateTaskItems = (callback) => {
-    const updatedTasks = callback(taskItems);
     setTaskItems(updatedTasks);
-    storeData(updatedTasks);
   };
 
+  // Função para marcar ou desmarcar uma tarefa como em edição
+  const handleToggleEdit = (taskId) => {
+    setTaskItems((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, isEditing: !task.isEditing } : task
+      )
+    );
+  };
+
+  // Função para marcar ou desmarcar uma tarefa como concluída
+  const handleToggleCheckbox = (taskId) => {
+    setTaskItems((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, checked: !task.checked } : task
+      )
+    );
+  };
+
+  // Função para concluir e remover uma tarefa
   const completeTaskById = (taskId) => {
-    updateTaskItems(prevTasks => prevTasks.filter(task => task.id !== taskId));
-  };
-
-  const togglePropertyById = (taskId, property) => {
-    updateTaskItems(prevTasks =>
-      prevTasks.map(task => task.id === taskId ? { ...task, [property]: !task[property] } : task)
+    setTaskItems((prevTasks) =>
+      prevTasks.filter((task) => task.id !== taskId)
     );
   };
 
+  // Função para concluir a edição de uma tarefa
   const completeEditingTask = (taskId, newText) => {
-    updateTaskItems(prevTasks =>
-      prevTasks.map(task => task.id === taskId ? { ...task, text: newText, isEditing: false } : task)
+    setTaskItems((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, text: newText, isEditing: false } : task
+      )
     );
   };
 
-  // Fetch Data
   useEffect(() => {
+    // Salva as tarefas no armazenamento ao serem atualizadas
+    storeData(taskItems);
+  }, [taskItems]);
+
+  useEffect(() => {
+    // Recupera tarefas do armazenamento ao carregar o aplicativo
     const fetchData = async () => {
       try {
         const data = await getData();
         if (data) setTaskItems(data);
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Erro ao buscar dados do AsyncStorage: ", error);
       }
     };
     fetchData();
   }, []);
 
-  // JSX
+  // Renderização da interface de usuário
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps='handled'>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.taskWrapper}>
-          <Text style={styles.sectionTitle}>Tarefas De hoje</Text>
+          <Text style={styles.sectionTitle}>Tarefas de Hoje</Text>
           <View style={styles.items}>
-            {taskItems.map((item, index) => (
+            {taskItems.map((item) => (
               <Task
-                key={index}
+                key={item.id}
                 task={item}
-                toggleEdit={() => togglePropertyById(item.id, 'isEditing')}
                 completeEditingTask={completeEditingTask}
-                toggleCheckbox={() => togglePropertyById(item.id, 'checked')}
                 completeTaskById={completeTaskById}
+                toggleEdit={() => handleToggleEdit(item.id)}
+                toggleCheckbox={() => handleToggleCheckbox(item.id)}
               />
             ))}
           </View>
         </View>
       </ScrollView>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.writeTaskWrapper}>
-        <TextInput style={styles.input} placeholder={'Escreva uma tarefa'} value={task} onChangeText={setTask} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.writeTaskWrapper}
+      >
+        <TextInput
+          style={styles.input}
+          placeholder={'Escreva uma tarefa'}
+          value={task}
+          onChangeText={setTask}
+        />
         <TouchableOpacity onPress={handleAddTask}>
           <View style={styles.addWrapper}>
             <Text style={styles.addText}>+</Text>
@@ -103,7 +130,7 @@ export default function App() {
   );
 }
 
-// Styles
+// Estilos
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -113,7 +140,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
-
   taskWrapper: {
     flex: 1,
     paddingTop: 0.1 * windowHeight,
@@ -161,9 +187,3 @@ const styles = StyleSheet.create({
     fontSize: 0.05 * windowWidth,
   },
 });
-
-
-
-
-
-
