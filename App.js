@@ -16,7 +16,7 @@ import { storePendingTasks, getPendingTasks, storeCompletedTasks, getCompletedTa
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { AppStyles as styles } from './components/UI/AppStyles';
 import COLORS from './components/UI/colors';
-
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 
 export default function App() {
@@ -35,45 +35,40 @@ export default function App() {
       isEditing: false,
       checked: false
     };
-    
+
     setTaskItems(prev => [...prev, newTask]);
     setTask('');
     Keyboard.dismiss();
   };
 
   const handleToggleEdit = (taskId) => {
-    setTaskItems(prevTasks => 
-      prevTasks.map(task => 
+    setTaskItems(prevTasks =>
+      prevTasks.map(task =>
         task.id === taskId ? { ...task, isEditing: !task.isEditing } : task
       )
     );
   };
 
   const handleToggleCheckbox = (taskId) => {
-    setTaskItems((prevTasks) => {
-      const taskToToggle = prevTasks.find(t => t.id === taskId);
-      
-      // Se a tarefa estiver sendo marcada como concluída
-      if (taskToToggle && !taskToToggle.checked) {
-        setCompleteTaskItems((prevComplete) => [...prevComplete, { ...taskToToggle, checked: true }]);
-        return prevTasks.filter(task => task.id !== taskId);
+    if (showCompleted) {
+      // Task is currently in the completed list and needs to be moved back to pending.
+      const taskToMove = completeTaskItems.find(t => t.id === taskId);
+      if (taskToMove) {
+        setTaskItems(prev => [...prev, { ...taskToMove, checked: false }]);
+        setCompleteTaskItems(prev => prev.filter(task => task.id !== taskId));
       }
-  
-      return prevTasks.map(task => task.id === taskId ? { ...task, checked: !task.checked } : task);
-    });
-  
-    setCompleteTaskItems((prevComplete) => {
-      const taskToToggle = prevComplete.find(t => t.id === taskId);
-      
-      if (taskToToggle) {
-        setTaskItems((prevTasks) => [...prevTasks, { ...taskToToggle, checked: false }]);
-        return prevComplete.filter(task => task.id !== taskId);
+    } else {
+      // Task is currently in the pending list and needs to be moved to completed.
+      const taskToMove = taskItems.find(t => t.id === taskId);
+      if (taskToMove) {
+        setCompleteTaskItems(prev => [...prev, { ...taskToMove, checked: true }]);
+        setTaskItems(prev => prev.filter(task => task.id !== taskId));
       }
-  
-      return prevComplete;
-    });
+    }
   };
   
+
+
 
 
   const toggleFilter = () => {
@@ -102,57 +97,71 @@ export default function App() {
   useEffect(() => {
     storePendingTasks(taskItems);
     storeCompletedTasks(completeTaskItems);
-}, [taskItems, completeTaskItems]);
+  }, [taskItems, completeTaskItems]);
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const pendingData = await getPendingTasks();
-      const completedData = await getCompletedTasks();
-      if (pendingData) setTaskItems(pendingData);
-      if (completedData) setCompleteTaskItems(completedData);
-    } catch (error) {
-      console.error("Erro ao buscar dados do AsyncStorage: ", error);
-    }
-  };
-  fetchData();
-}, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const pendingData = await getPendingTasks();
+        const completedData = await getCompletedTasks();
+        if (pendingData) setTaskItems(pendingData);
+        if (completedData) setCompleteTaskItems(completedData);
+      } catch (error) {
+        console.error("Erro ao buscar dados do AsyncStorage: ", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const tasksToRender = showCompleted ? completeTaskItems : taskItems.filter(task => !task.checked);
+
 
   // Renderização da interface de usuário
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.taskWrapper}>
+      <View style={styles.taskWrapper}>
+        <Text style={styles.sectionTitle}>Tarefas de Hoje</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
           <Text style={styles.sectionTitle}>Tarefas de Hoje</Text>
-          <TouchableOpacity
-            style={[styles.filtro, { backgroundColor: showCompleted ? 'green' : 'white' }]}
-            onPress={toggleFilter}
-          >
-            <Text style={{ color: showCompleted ? 'white' : 'green' }}>
-              {showCompleted ? 'Concluídas' : 'Pendentes'}
+          <TouchableOpacity onPress={toggleFilter}>
+            <Text style={{ color: COLORS.primary, fontWeight: 'bold' }}>
+              {showCompleted ? 'Show Pending' : 'Show Completed'}
             </Text>
           </TouchableOpacity>
-
-          <View style={styles.items}>
-            {tasksToRender.map((item) => (
-              <Task
-                key={item.id}
-                task={item}
-                completeEditingTask={completeEditingTask}
-                completeTaskById={completeTaskById}
-                toggleEdit={() => handleToggleEdit(item.id)}
-                toggleCheckbox={() => handleToggleCheckbox(item.id)}
-                completeTaskItems={completeTaskItems}
-              />
-            ))}
-          </View>
         </View>
-      </ScrollView>
+
+        <SwipeListView
+          data={tasksToRender}
+          renderItem={(data, rowMap) => (
+            <Task
+              key={data.item.id}
+              task={data.item}
+              completeEditingTask={completeEditingTask}
+              toggleEdit={() => handleToggleEdit(data.item.id)}
+              toggleCheckbox={() => handleToggleCheckbox(data.item.id)}
+              completeTaskItems={completeTaskItems}
+            />
+          )}
+          renderHiddenItem={(data, rowMap) => (
+            <View style={styles.rowBack}>
+              <TouchableOpacity
+                style={[styles.backRightBtn, styles.backRightBtnRight]}
+                onPress={() => {
+                  if (showCompleted) {
+                    setCompleteTaskItems(prevTasks => prevTasks.filter(task => task.id !== data.item.id));
+                  } else {
+                    setTaskItems(prevTasks => prevTasks.filter(task => task.id !== data.item.id));
+                  }
+                }}>
+                <Text style={styles.backTextWhite}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          rightOpenValue={-75}
+        />
+
+      </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.writeTaskWrapper}
@@ -167,10 +176,11 @@ useEffect(() => {
           <View style={styles.addWrapper}>
             <Icon name="plus" size={20} color={COLORS.text} />
           </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
   );
+
 }
 
 // Estilos

@@ -10,27 +10,27 @@ const AppStyles = StyleSheet.create({
         backgroundColor: COLORS.background,
         flexDirection: 'column',
         justifyContent: 'space-between',
-      },
-      highlightedText: {
+    },
+    highlightedText: {
         color: COLORS.accent,
     },
-      taskWrapper: {
+    taskWrapper: {
         flex: 1,
         paddingTop: 0.1 * windowHeight,
         paddingHorizontal: 0.05 * windowWidth,
         justifyContent: 'flex-start',
-      },
-      sectionTitle: {
+    },
+    sectionTitle: {
         fontSize: 0.05 * windowWidth,
         fontWeight: 'bold',
         textAlign: 'center',
         color: COLORS.text,
-      },
-      items: {
+    },
+    items: {
         marginTop: 0.03 * windowHeight,
         paddingHorizontal: 0.05 * windowWidth,
-      },
-      writeTaskWrapper: {
+    },
+    writeTaskWrapper: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -38,11 +38,11 @@ const AppStyles = StyleSheet.create({
         position: 'absolute',
         bottom: 0.08 * windowHeight,
         width: '100%',
-      },
-      input: {
+    },
+    input: {
         paddingVertical: 0.02 * windowHeight,
         width: '65%',
-        backgroundColor:'white',
+        backgroundColor: 'white',
         borderRadius: 30,
         borderColor: COLORS.secondary,
         borderWidth: 1,
@@ -50,8 +50,8 @@ const AppStyles = StyleSheet.create({
         paddingHorizontal: 15,
         fontSize: 16,
         color: COLORS.text,
-      },
-      addWrapper: {
+    },
+    addWrapper: {
         width: 0.15 * windowWidth,
         height: 0.15 * windowWidth,
         backgroundColor: COLORS.secondary,
@@ -68,21 +68,45 @@ const AppStyles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5, // for android
-      
-      },
-      addText: {
+
+    },
+    addText: {
         fontSize: 0.05 * windowWidth,
-      },
-      filtro: {
+    },
+    filtro: {
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 15,
         marginLeft: 10,
-      }
+    }, 
+    rowBack: {
+        alignItems: 'center',
+        backgroundColor: COLORS.background,  
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingLeft: 15,
+    },
+    backRightBtn: {
+        alignItems: 'center',
+        bottom: 0,
+        justifyContent: 'center',
+        position: 'absolute',
+        top: 0,
+        width: 75,
+    },
+    backRightBtnRight: {
+        backgroundColor:  COLORS.background,
+        right: 0,
+    },
+    backTextWhite: {
+        color: 'black',
+    },
+});
     
-  });
-  
-  const TaskStyles = StyleSheet.create({
+ 
+
+const TaskStyles = StyleSheet.create({
     item: {
         backgroundColor: COLORS.primary,
         padding: 15,
@@ -91,22 +115,22 @@ const AppStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 20,
-      },
-      itemText: {
+    },
+    itemText: {
         maxWidth: '80%',
         color: COLORS.text,
-      },
-      editText: {
+    },
+    editText: {
         marginLeft: 10,
-      },
-      editInput: {
+    },
+    editInput: {
         flex: 1,
-        backgroundColor: COLORS.text,
+        backgroundColor: 'white',
         padding: 10,
         borderRadius: 5,
         marginRight: 10
-      },
-      checkboxBase: {
+    },
+    checkboxBase: {
         width: 24,
         height: 24,
         borderRadius: 5,
@@ -115,21 +139,21 @@ const AppStyles = StyleSheet.create({
         alignItems: 'center',
         borderColor: COLORS.accent,
         marginRight: 15,
-      },
-      checkboxChecked: {
+    },
+    checkboxChecked: {
         width: 14,
         height: 14,
         backgroundColor: COLORS.accent,
-      },
-      actions: {
+    },
+    actions: {
         flexDirection: 'row',
         alignItems: 'center',
-      },
-      highlightedText: {
+    },
+    highlightedText: {
         color: COLORS.accent,
     },
-    
-  });
-  
+
+});
+
 
 export { AppStyles, TaskStyles };
