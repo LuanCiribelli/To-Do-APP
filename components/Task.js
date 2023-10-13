@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Animated } from "react-native";
+import { TaskStyles as styles } from './UI/AppStyles';
+
 
 const Task = ({
   task,
@@ -22,6 +24,15 @@ const Task = ({
   const handleCheckboxToggle = () => {
     toggleCheckbox(task.id);
   };
+  const opacity = useState(new Animated.Value(0))[0];
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
 
   return task.isEditing ? (
     <View style={styles.item}>
@@ -35,7 +46,7 @@ const Task = ({
       </TouchableOpacity>
     </View>
   ) : (
-    <View style={styles.item}>
+    <Animated.View style={{...styles.item, opacity}}>
       <Text style={styles.itemText}>{task.text}</Text>
       <View style={styles.actions}>
         <TouchableOpacity onPress={() => toggleEdit(task.id)}>
@@ -49,52 +60,10 @@ const Task = ({
 
         </TouchableOpacity>
       </View>
-    </View>
+      </Animated.View>
   );
 };
 
-const styles = StyleSheet.create({
-  item: {
-    backgroundColor: '#FFF',
-    padding: 15,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  itemText: {
-    maxWidth: '80%',
-  },
-  editText: {
-    marginLeft: 10,
-  },
-  editInput: {
-    flex: 1,
-    backgroundColor: '#E8EAED',
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10
-  },
-  checkboxBase: {
-    width: 24,
-    height: 24,
-    borderRadius: 5,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: '#55BCF6',
-    marginRight: 15,
-  },
-  checkboxChecked: {
-    width: 14,
-    height: 14,
-    backgroundColor: '#55BCF6',
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  }
-});
+
 
 export default Task;

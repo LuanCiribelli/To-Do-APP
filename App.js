@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   ScrollView,
   Platform,
-  Dimensions
+  Dimensions,
+  Animated,
 } from 'react-native';
 import Task from './components/Task';
 import { storePendingTasks, getPendingTasks, storeCompletedTasks, getCompletedTasks } from './components/storage';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { AppStyles as styles } from './components/UI/AppStyles';
+import COLORS from './components/UI/colors';
+
+
 
 export default function App() {
   const [task, setTask] = useState('');
@@ -160,9 +165,9 @@ useEffect(() => {
         />
         <TouchableOpacity onPress={handleAddTask}>
           <View style={styles.addWrapper}>
-            <Text style={styles.addText}>+</Text>
+            <Icon name="plus" size={20} color={COLORS.text} />
           </View>
-        </TouchableOpacity>
+      </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
   );
@@ -171,64 +176,3 @@ useEffect(() => {
 // Estilos
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E8EAED',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  taskWrapper: {
-    flex: 1,
-    paddingTop: 0.1 * windowHeight,
-    paddingHorizontal: 0.05 * windowWidth,
-    justifyContent: 'flex-start',
-  },
-  sectionTitle: {
-    fontSize: 0.05 * windowWidth,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  items: {
-    marginTop: 0.03 * windowHeight,
-    paddingHorizontal: 0.05 * windowWidth,
-  },
-  writeTaskWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 0.05 * windowWidth,
-    position: 'absolute',
-    bottom: 0.08 * windowHeight,
-    width: '100%',
-  },
-  input: {
-    paddingVertical: 0.02 * windowHeight,
-    width: '65%',
-    backgroundColor: '#FFF',
-    borderRadius: 30,
-    borderColor: '#C0C0C0',
-    borderWidth: 1,
-    textAlign: 'center',
-  },
-  addWrapper: {
-    width: 0.15 * windowWidth,
-    height: 0.15 * windowWidth,
-    backgroundColor: '#FFF',
-    borderRadius: 0.075 * windowWidth,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: '#C0C0C0',
-    borderWidth: 1,
-  },
-  addText: {
-    fontSize: 0.05 * windowWidth,
-  },
-  filtro: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 15,
-    marginLeft: 10,
-  }
-
-});
