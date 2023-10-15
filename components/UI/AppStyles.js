@@ -102,6 +102,34 @@ const AppStyles = StyleSheet.create({
     backTextWhite: {
         color: 'black',
     },
+    searchInput: {
+        padding: 10,
+        backgroundColor: 'white',
+        borderRadius: 5,
+        marginBottom: 10,
+        color: COLORS.text,
+    },
+    searchWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    clearSearch: {
+        marginLeft: 10,
+        color: COLORS.text,
+    },
+    emptyStateMessage: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: COLORS.text,
+        paddingHorizontal: 15,
+    }
+    
+        
 });
     
  
